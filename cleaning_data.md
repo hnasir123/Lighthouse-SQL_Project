@@ -59,3 +59,28 @@ SELECT *,
         ORDER BY visitId, fullVisitorId
         ) AS Row_Number
 FROM analytics;
+
+## Removing duplicates
+
+WITH CTE AS (
+SELECT
+	fullvisitorid,
+	visitid,
+	ROW_NUMBER() OVER (
+		PARTITION BY visitid
+		ORDER BY fullvisitorid
+	) AS row_num
+FROM
+all_sessions
+)
+DELETE FROM all_sessions
+WHERE
+(fullvisitorid, visitid) IN (
+SELECT
+	fullvisitorid,
+	visitid
+FROM
+	CTE
+WHERE
+row_num > 1
+);
